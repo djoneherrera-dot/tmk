@@ -26,7 +26,9 @@
 
   /* ---------- ENTRADA: vídeo do drone rodando sozinho ---------- */
   const hv = document.querySelector('[data-hero]');
-  hv.play().catch(() => {});
+  /* o que é pesado (vídeo, mapa, linhas de luz) só começa depois da abertura, para ela ficar fluida */
+  const afterIntro = fn => window.TMK_INTRO ? document.addEventListener('tmk:intro-end', fn, { once: true }) : setTimeout(fn, 0);
+  afterIntro(() => { hv.preload = 'auto'; hv.play().catch(() => {}); });
   if (motion) {
     G.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true } })
       .to('.hero__copy', { y: -80, opacity: 0 }, 0)
@@ -197,6 +199,8 @@
   dlg.addEventListener('cancel', e => { e.preventDefault(); closeFolder(); });
   dlg.addEventListener('click', e => { if (e.target === dlg) closeFolder(); });
 
+  afterIntro(initMap);
+  function initMap() {
   /* ---------- mapa do Brasil ---------- */
   const M = window.BR_MAP, svg = document.querySelector('[data-map]');
   const sx = 600 / (-34.6 + 74.2), prj = (lon, lat) => [(lon + 74.2) * sx, (5.4 - lat) * sx];
@@ -237,6 +241,8 @@
     ufs.forEach(u => svg.querySelector(`[data-uf="${u}"]`).classList.add('is-on'));
   }
 
+  }
+
   /* ---------- formulário: monta a mensagem e abre no WhatsApp ---------- */
   const form = document.querySelector('[data-form]');
   form.addEventListener('submit', e => {
@@ -251,6 +257,6 @@
   row.innerHTML = [...D.clientes, ...D.clientes].map(c => `<span><img src="assets/img/clientes/${c[0]}.webp" alt="${c[1]}" loading="lazy"></span>`).join('');
 
   /* monta as linhas de luz depois que tudo carregou */
-  addEventListener('load', () => { buildFlow(); ST && ST.refresh(); });
-  buildFlow();
+  afterIntro(() => { buildFlow(); ST && ST.refresh(); });
+  addEventListener('load', () => { if (!window.TMK_INTRO || !document.querySelector('.intro')) { buildFlow(); ST && ST.refresh(); } });
 })();
