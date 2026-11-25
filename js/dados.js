@@ -20,21 +20,21 @@ window.TMK = {
       texto: 'Turnkey de projetos, equipamentos, infraestrutura, testes e comissionamento da ampliação da SE 3 Aciaria, com novo barramento de 13,8 kV (Barra 4) interligado à Barra 3.' },
     { cliente: 'CPFL', titulo: 'Construção LD Ramal Carlos Barbosa 2', local: 'Carlos Barbosa/RS', ano: 'Em andamento', foto: 'obra-042.webp',
       texto: 'Construção de linha de distribuição.' },
-    { cliente: 'Equatorial', titulo: 'Ampliação da SE Guaíba 1', local: 'Guaíba/RS', ano: 'Em andamento', foto: 'obra-048.webp',
-      texto: 'Ampliação de subestação.' },
-    { cliente: 'Equatorial', titulo: 'Nova Subestação Gruta', local: 'Maceió/AL', ano: 'Em andamento', foto: 'obra-050.webp',
-      texto: 'Construção de nova subestação.' },
     { cliente: 'Usina Santa Maria — Bioenergia', titulo: 'Subestação elevadora 13,8/69 kV (30 MVA) e LD 69 kV', local: 'Medeiros Neto/BA', ano: 'Em andamento', foto: 'obra-medeiros-neto.webp',
       texto: 'Projetos executivos, montagem eletromecânica e elétrica da subestação elevadora de 30 MVA e construção de 1,2 km de linha de distribuição em 69 kV (circuito simples, estruturas de concreto) até a subestação de chaveamento da COELBA, com comissionamento e operação assistida.' }
   ],
   /* tipo: 'se' = subestação | 'lt' = linha de transmissão/distribuição
      fotos: galeria extra (arquivos em assets/img), aparece em "Ver detalhes" */
   concluidos: [
+    { tipo: 'se', cliente: 'Equatorial', titulo: 'Nova Subestação Gruta', local: 'Maceió/AL', ano: 'Concluído', foto: 'obra-050.webp', fotos: ['obra-052.webp'],
+      texto: 'Construção de nova subestação.' },
+    { tipo: 'se', cliente: 'Equatorial', titulo: 'Ampliação da SE Guaíba 1', local: 'Guaíba/RS', ano: 'Concluído', foto: 'obra-048.webp',
+      texto: 'Ampliação de subestação.' },
     { tipo: 'lt', cliente: 'Furnas · EDP', titulo: 'LD 138 kV Viana II (16,8 km)', local: 'Viana, Cariacica e Vila Velha/ES', ano: '2024', foto: 'obra-ld-viana2.webp',
       texto: 'Obra civil e montagem eletromecânica da linha de distribuição que interliga a SE Viana II (Furnas) às subestações Caçaroca e IBS (EDP), com fundações especiais em estacas e tubulões, montagem das estruturas metálicas e lançamento de condutores e cabos para-raios OPGW.' },
     { tipo: 'se', cliente: 'Brametal', titulo: 'SE Brametal 7,5 MVA 138/15 kV', local: 'Linhares/ES', ano: '2024', foto: 'obra-brametal.webp',
       texto: 'Regime turnkey: projetos civis, eletromecânicos e elétricos, compras de materiais e equipamentos, obras civis, montagem eletromecânica e elétrica, automação, comissionamento e operação assistida, além das redes de média tensão em 15 kV para as novas demandas da fábrica.' },
-    { tipo: 'se', cliente: 'ArcelorMittal', titulo: 'Estação Recebedora 4 — ampliação e 2º barramento 138 kV', local: 'Serra/ES', ano: 'Concluído', foto: 'obra-052.webp', fotos: ['h/er4-1.webp'],
+    { tipo: 'se', cliente: 'ArcelorMittal', titulo: 'Estação Recebedora 4 — ampliação e 2º barramento 138 kV', local: 'Serra/ES', ano: 'Concluído', foto: 'h/er4-1.webp',
       texto: 'Turnkey da ampliação da ER4 com segundo barramento de 138 kV: projetos, obras civis, compras de equipamentos e materiais, montagem eletromecânica e elétrica e comissionamento. Inclui o lançamento de cabos 185 mm² 8,7/15 kV da subestação de Utilidades para a sala elétrica do Despoeiramento Secundário.' },
     { tipo: 'se', cliente: 'Carta Fabril', titulo: 'Subestação da planta de papel com interligação à LT 138 kV da Light', local: 'Piraí/RJ', ano: 'Concluído', foto: 'h/cartafabril-1.webp', fotos: ['h/cartafabril-1.webp','h/cartafabril-2.webp','h/cartafabril-3.webp'],
       texto: 'Turnkey: projeto executivo completo da subestação, terraplanagem, obras civis e montagem eletromecânica, estudos de seletividade e curto-circuito e interligação com a linha de transmissão de 138 kV da Light.' },

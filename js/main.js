@@ -99,7 +99,8 @@
   }
   items.forEach(li => li.addEventListener('mouseenter', () => fine() && setArea(li)));
   new IntersectionObserver(([e]) => { if (e.isIntersecting && !av.dataset.cur) setArea(items[1]); }, { threshold: .3 }).observe(av);
-  if (motion) items.forEach(li => ST.create({ trigger: li, start: 'top 60%', end: 'bottom 60%', onToggle: s => s.isActive && !fine() && setArea(li) }));
+  let areaT; // no celular só troca o vídeo se a pessoa parar ali (rolar rápido não baixa os 4 vídeos)
+  if (motion) items.forEach(li => ST.create({ trigger: li, start: 'top 60%', end: 'bottom 60%', onToggle: s => { clearTimeout(areaT); if (s.isActive && !fine()) areaT = setTimeout(() => setArea(li), 450); } }));
 
   /* ---------- projetos: a pasta abre e as fichas saem de dentro dela ---------- */
   const dlg = document.querySelector('[data-pasta]'), list = dlg.querySelector('[data-plist]');
@@ -109,7 +110,7 @@
     const fotos = [...new Set([p.foto, ...(p.fotos || [])].filter(Boolean))];
     return `
       <li class="ficha" data-tipo="${p.tipo || ''}">
-        <span class="ficha__img">${fotos.length ? `<img src="assets/img/${fotos[0]}" alt="${p.titulo}" loading="lazy">` : ''}${fotos.length > 1 ? `<i class="ficha__n">${fotos.length} fotos</i>` : ''}</span>
+        <span class="ficha__img">${fotos.length ? `<img data-src="assets/img/${fotos[0]}" alt="${p.titulo}" loading="lazy">` : ''}${fotos.length > 1 ? `<i class="ficha__n">${fotos.length} fotos</i>` : ''}</span>
         <button class="ficha__btn" aria-expanded="false">
           <span class="ficha__txt">
             <span class="ficha__cli">${p.cliente}</span>
@@ -120,7 +121,7 @@
         </button>
         <div class="ficha__more"><div>
           <p class="ficha__p">${p.texto}</p>
-          ${fotos.length > 1 ? `<div class="ficha__gal">${fotos.map((f, i) => `<button class="${i ? '' : 'is-on'}" data-src="assets/img/${f}" aria-label="Foto ${i + 1}"><img src="assets/img/${f}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
+          ${fotos.length > 1 ? `<div class="ficha__gal">${fotos.map((f, i) => `<button class="${i ? '' : 'is-on'}" data-src="assets/img/${f}" aria-label="Foto ${i + 1}"><img data-lazy="assets/img/${f}" alt=""></button>`).join('')}</div>` : ''}
         </div></div>
       </li>`;
   }
@@ -139,6 +140,7 @@
     }));
     list.querySelectorAll('.ficha__btn').forEach(b => b.addEventListener('click', () => {
       const li = b.parentElement, open = li.classList.toggle('is-open'); b.setAttribute('aria-expanded', open);
+      if (open) li.querySelectorAll('img[data-lazy]').forEach(im => { im.src = im.dataset.lazy; im.removeAttribute('data-lazy'); });
       b.querySelector('.ficha__ver').textContent = open ? 'Fechar detalhes' : 'Ver detalhes';
     }));
     list.querySelectorAll('.ficha__gal button').forEach(t => t.addEventListener('click', () => {
@@ -175,6 +177,10 @@
       G.from('.pasta__head', { y: -20, opacity: 0, duration: .5, ease: 'power3.out' });
       G.from(cards, { x: i => cards[i]._dx, y: i => cards[i]._dy, scale: .2, rotate: () => (Math.random() - .5) * 30, opacity: 0, duration: .8, ease: 'expo.out', stagger: .045 });
     };
+    // fotos das fichas: as 6 primeiras já; as outras só quando aparecerem na tela (depois da animação)
+    const imgs = [...list.querySelectorAll('.ficha__img img[data-src]')], put = im => { im.src = im.dataset.src; im.removeAttribute('data-src'); };
+    imgs.slice(0, 6).forEach(put);
+    setTimeout(() => imgs.slice(6).forEach(put), reduce ? 0 : 1300);
     reduce ? go() : setTimeout(go, 380);
   }
   function closeFolder() {
