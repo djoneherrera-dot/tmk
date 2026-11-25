@@ -104,23 +104,48 @@
   /* ---------- projetos: a pasta abre e as fichas saem de dentro dela ---------- */
   const dlg = document.querySelector('[data-pasta]'), list = dlg.querySelector('[data-plist]');
   ['andamento', 'concluidos'].forEach(k => { document.querySelector(`[data-n="${k}"]`).textContent = D[k].length; });
-  function render(k) {
-    list.innerHTML = D[k].length ? D[k].map(p => `
-      <li class="ficha">
+  const TIPOS = { todas: 'Todas', se: 'Subestações', lt: 'Linhas' };
+  function ficha(p) {
+    const fotos = [...new Set([p.foto, ...(p.fotos || [])].filter(Boolean))];
+    return `
+      <li class="ficha" data-tipo="${p.tipo || ''}">
+        <span class="ficha__img">${fotos.length ? `<img src="assets/img/${fotos[0]}" alt="${p.titulo}" loading="lazy">` : ''}${fotos.length > 1 ? `<i class="ficha__n">${fotos.length} fotos</i>` : ''}</span>
         <button class="ficha__btn" aria-expanded="false">
-          <span class="ficha__img">${p.foto ? `<img src="assets/img/${p.foto}" alt="" loading="lazy">` : ''}</span>
           <span class="ficha__txt">
             <span class="ficha__cli">${p.cliente}</span>
             <span class="ficha__tit">${p.titulo}</span>
             <span class="ficha__meta"><span>${p.local}</span><span>${p.ano}</span></span>
-            <span class="ficha__more"><span><span class="ficha__p">${p.texto}</span></span></span>
             <span class="ficha__ver">Ver detalhes</span>
           </span>
         </button>
-      </li>`).join('') : '<li class="ficha--empty">Em breve.</li>';
+        <div class="ficha__more"><div>
+          <p class="ficha__p">${p.texto}</p>
+          ${fotos.length > 1 ? `<div class="ficha__gal">${fotos.map((f, i) => `<button class="${i ? '' : 'is-on'}" data-src="assets/img/${f}" aria-label="Foto ${i + 1}"><img src="assets/img/${f}" alt="" loading="lazy"></button>`).join('')}</div>` : ''}
+        </div></div>
+      </li>`;
+  }
+  function render(k) {
+    const itens = D[k], temTipo = itens.length > 8;
+    const filtro = temTipo ? `<div class="pasta__filtro" role="group" aria-label="Filtrar obras">${Object.entries(TIPOS).map(([t, n]) => `<button data-f="${t}" class="${t === 'todas' ? 'is-on' : ''}">${n} <sup>${t === 'todas' ? itens.length : itens.filter(p => p.tipo === t).length}</sup></button>`).join('')}</div>` : '';
+    const outras = k === 'concluidos' && D.outras && D.outras.length ? `<li class="outras" data-tipo="todas"><p class="mono">Outras obras executadas</p><ul>${D.outras.map(([t, tit, loc]) => `<li data-tipo="${t}"><span>${tit}</span><span>${loc}</span></li>`).join('')}</ul></li>` : '';
+    list.innerHTML = itens.length ? itens.map(ficha).join('') + outras : '<li class="ficha--empty">Em breve.</li>';
+    const old = dlg.querySelector('.pasta__filtro'); if (old) old.remove();
+    if (filtro) list.insertAdjacentHTML('beforebegin', filtro);
+    dlg.querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => {
+      const f = b.dataset.f;
+      dlg.querySelectorAll('[data-f]').forEach(x => x.classList.toggle('is-on', x === b));
+      list.querySelectorAll('[data-tipo]').forEach(li => { li.hidden = !(f === 'todas' || li.dataset.tipo === f || li.dataset.tipo === 'todas'); });
+      if (motion) G.from(list.querySelectorAll('.ficha:not([hidden])'), { opacity: 0, y: 24, duration: .5, stagger: .03, ease: 'power2.out' });
+    }));
     list.querySelectorAll('.ficha__btn').forEach(b => b.addEventListener('click', () => {
-      const open = b.parentElement.classList.toggle('is-open'); b.setAttribute('aria-expanded', open);
+      const li = b.parentElement, open = li.classList.toggle('is-open'); b.setAttribute('aria-expanded', open);
       b.querySelector('.ficha__ver').textContent = open ? 'Fechar detalhes' : 'Ver detalhes';
+    }));
+    list.querySelectorAll('.ficha__gal button').forEach(t => t.addEventListener('click', () => {
+      const li = t.closest('.ficha'), main = li.querySelector('.ficha__img img');
+      li.querySelectorAll('.ficha__gal button').forEach(x => x.classList.toggle('is-on', x === t));
+      if (motion) G.fromTo(main, { opacity: .2 }, { opacity: 1, duration: .4 });
+      main.src = t.dataset.src;
     }));
   }
   /* fotos reais nas pastas, trocando sozinhas (só quando a pasta está na tela) */
@@ -144,7 +169,7 @@
       if (!motion) return;
       // as fichas saem do ponto onde está a pasta
       const r = b.querySelector('.folder__art').getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-      const cards = [...list.children];
+      const cards = [...list.children].filter(c => c.classList.contains('ficha'));
       cards.forEach(c => { const q = c.getBoundingClientRect(); c._dx = cx - (q.left + q.width / 2); c._dy = cy - (q.top + q.height / 2); });
       G.fromTo(dlg, { '--bg': 0 }, { '--bg': 1, duration: .4 });
       G.from('.pasta__head', { y: -20, opacity: 0, duration: .5, ease: 'power3.out' });
@@ -157,7 +182,7 @@
     const done = () => { dlg.close(); document.documentElement.classList.remove('is-locked'); fromFolder && fromFolder.classList.remove('is-opening'); };
     if (!motion || !fromFolder) return done();
     const r = fromFolder.querySelector('.folder__art').getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    const cards = [...list.children];
+    const cards = [...list.children].filter(c => c.classList.contains('ficha'));
     G.to(cards, { x: (i, c) => { const q = c.getBoundingClientRect(); return cx - (q.left + q.width / 2); }, y: (i, c) => { const q = c.getBoundingClientRect(); return cy - (q.top + q.height / 2); }, scale: .2, opacity: 0, duration: .45, ease: 'power3.in', stagger: .02 });
     G.to(dlg, { '--bg': 0, duration: .45, delay: .15, onComplete: () => { G.set(dlg, { clearProps: '--bg' }); done(); } });
   }
@@ -190,7 +215,7 @@
     tl.from(`[data-t="${home.uf}"] .tw`, { scaleY: 0, transformOrigin: '50% 100%', duration: .7, ease: 'back.out(2)' }).call(() => legend(home.uf), null, '<');
     pts.filter(m => m !== home).forEach((m, i) => {
       const [w, L] = wires[i], pulse = svg.querySelector(`[data-p="${m.uf}"]`);
-      tl.to(w, { strokeDashoffset: 0, duration: .9, ease: 'power2.inOut' }, '+=.1')
+      tl.to(w, { strokeDashoffset: 0, duration: .7, ease: 'power2.inOut' }, i ? '-=.4' : '+=.1')
         .call(() => { svg.querySelector(`[data-uf="${m.uf}"]`).classList.add('is-on'); legend(m.uf); })
         .from(`[data-t="${m.uf}"] .tw`, { scaleY: 0, transformOrigin: '50% 100%', duration: .6, ease: 'back.out(2)' }, '<')
         .call(() => { if (m.status !== 'futuro') { pulse.style.opacity = 1; G.fromTo(pulse, { strokeDashoffset: 18 }, { strokeDashoffset: -pulse._L, duration: 1.8, ease: 'none', repeat: -1, repeatDelay: .4 + i * .3 }); } });
